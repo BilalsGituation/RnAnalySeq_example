@@ -21,6 +21,7 @@ Since the main workflow contains calls to GATK (McKenna et al., 2010) and Rbowti
 POSIX-compatible system such as Linux and macOS.
 
 PLANNED UPDATES:
+
 Next patch(es) should include:
 - Update anything related to ensembl release 112 => 113 and test them
 - Update GATK version and validate calls to it
