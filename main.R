@@ -255,14 +255,16 @@ exec_wait(gatk, c("AddOrReplaceReadGroups", "--help"))
 #samtools view: error closing standard output: -1
 exec_wait("./shell/ViewBamHeader.sh", c(bams[1], 2))
 
+# These publicly available data didn't contain metadata on library and lane,
+# so the sequencing libraries are named SampleName-1 and the flowcell lanes
+# LibraryName-1 (SampleName-1-1)
 for (i in 1:length(bams)) {
   exec_wait("samtools", c("addreplacerg", 
-                          c("-r", "LB:PRJNA394750"), # NCBI BioProject
-                          c("-r", paste0("ID:",substr(bams[i],15,24))), # Run accession
                           c("-r", "PL:ILLUMINA"), # Seq Platform
                           c("-r", 
-                            paste0("SM:GSM27058",(i+79))), # Lane number or 
-                          # Sample name when unknown
+                            paste0("SM:GSM27058",(i+79))), 
+                          c("-r", paste0("LB:GSM27058",(i+79),"-1")), 
+                          c("-r", paste0("ID:GSM27058",(i+79),"-1-1")), 
                           c("-m", "overwrite_all"), 
                           c("-o", paste0(td,"/", substr(bams[i],15,24),"_RG.bam")),
                           c("--threads", (detectCores()-1)), # number in addition to main thread
