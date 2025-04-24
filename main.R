@@ -1,7 +1,7 @@
 # Run in POSIX (this is only tested in Ubuntu)
 options(timeout = 1000)
 pacman::p_load(#rfiglet, # install below
-               Rbowtie2, 
+               Rbowtie2, # wouldn't run on windows for me. remove_adapters() is relevant function
                stringr,
                tidyverse,
                #QuasR part
@@ -123,8 +123,8 @@ exec_wait("gunzip", c("-vf", "Mus_musculus.GRCm39.dna_sm.primary_assembly.fa.gz"
 exec_wait("wget", "https://ftp.ensembl.org/pub/release-113/gtf/mus_musculus/Mus_musculus.GRCm39.113.gtf.gz")
 exec_wait("gunzip", c("-vf", "Mus_musculus.GRCm39.113.gtf.gz"))
 
-# - mm39 ensembl variant file available here https://ftp.ensembl.org/pub/release-112/variation/vcf/mus_musculus/
-exec_wait("wget", "https://ftp.ensembl.org/pub/release-113/variation/vcf/mus_musculus/mus_musculus.vcf.gz")
+# - mm39 ensembl variant file available here https://ftp.ensembl.org/pub/release-113/variation/vcf/mus_musculus/
+exec_wait("wget", "https://ftp.ensembl.org/pub/release-113/variation/vcf/mus_musculus/mus_musculus_incl_consequences.vcf.gz")
 # decompress this ^^^ one later! You will be prompted
 
 # This makes it obvious in the console that a long job is complete
@@ -227,8 +227,8 @@ write_tsv(samples_rnaSeq, "samples_rnaSeq.txt")
 sampleFile <- "samples_rnaSeq.txt"
 
 
-genomeFile <- "Mus_musculus.GRCm39.dna_rm.primary_assembly.fa"
-annotFile <- "Mus_musculus.GRCm39.112.gtf"
+genomeFile <- "Mus_musculus.GRCm39.dna_sm.primary_assembly.fa"
+annotFile <- "Mus_musculus.GRCm39.113.gtf"
 dir.create(file.path(getwd(), "alignment_out"))
 
 # REMEMBER THAT IF YOU WANT A FRESH ALIGNMENT, NOT ONLY alignment_out, BUT ALSO
@@ -250,8 +250,8 @@ bams_dir <- "alignment_out"
 bams <- dir(path = bams_dir, pattern = ".bam$", full.names = T)
 
 gatk <- "path/to/gatk-version/gatk" # modify to fit your installation path
-exec_wait(gatk, "--help")
-exec_wait(gatk, c("AddOrReplaceReadGroups", "--help"))
+exec_wait(gatk, "--help") # verify gatk is installed and can be run from R
+exec_wait(gatk, c("MergeSamFiles", "--help")) # verify Picard wrapping works
 # Text Inside ViewBamHeader.sh = samtools view $1 | head -n $2
 # Ignore the following R console output:
 #samtools view: writing to standard output failed: Broken pipe
@@ -270,7 +270,7 @@ for (i in 1:length(bams)) {
                           c("-r", paste0("ID:GSM27058",(i+79),"-1-1")), 
                           c("-m", "overwrite_all"), 
                           c("-o", paste0(td,"/", substr(bams[i],15,24),"_RG.bam")),
-                          c("--threads", (detectCores()-1)), # number in addition to main thread
+                          c("--threads", (parallel::detectCores()-1)), # number in addition to main thread
                           bams[i]
   )
   )
@@ -283,9 +283,13 @@ alignmentStats(alignment)
 
 ########################## SNP CALLING #########################################
 
+#Create Helper Files
 exec_wait(gatk, c("CreateSequenceDictionary", 
                   c("-R", genomeFile)
                   )
+          )
+exec_wait("samtools",
+                  c("faidx", genomeFile)
           )
 
 td <- tempdir()
@@ -303,7 +307,7 @@ for (i in 1:length(RGbams)) {
   exec_wait("samtools", c("sort", 
                           RGbams[i], 
                           c("-o", sortedbams[i]), 
-                          c("--threads", detectCores())
+                          c("--threads", parallel::detectCores())
   )
   )
 }
@@ -343,7 +347,7 @@ exec_wait(gatk,
             
           )
 )
-gatk <- "path/to/gatk-4.6.0.0/gatk" # modify to fit your installation version
+gatk <- "path/to/gatk-version/gatk" # modify to fit your installation version
 
 
 # Using slurm
@@ -353,12 +357,15 @@ exec_wait("./shell/vCPrep_GRCm39_slurm.sh", c(td))
 
 # Without using slurm
 # SplitNCigarReads 
-variantFile <- "mus_musculus.vcf.gz"
+variantFile <- "mus_musculus_incl_consequences.vcf.gz"
+# Forgot why one executes IndexFeatureFile, so noting it:
+# The index is an aux file that gatk functions use internally to help them read
+# your decompressed .vcf file
 exec_wait(gatk, c("IndexFeatureFile", 
                   c("-I", variantFile))) # Documentation says this should be .gz
 
-exec_wait("gunzip", c("-vf", "mus_musculus.vcf.gz"))
-variantFile <- "mus_musculus.vcf" #Documentation says later steps use decompressed
+exec_wait("gunzip", c("-kf", "mus_musculus_incl_consequences.vcf.gz"))
+variantFile <- "mus_musculus_incl_consequences.vcf" #Documentation says later steps use decompressed
 
 SplitNCigar_out <- file.path(vc_in, "SplitNCigarReads.bam")
 SeqDict <- str_replace(genomeFile, ".fa", ".dict") # Created in line 281 as of this comment

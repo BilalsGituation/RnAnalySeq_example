@@ -7,24 +7,24 @@
 #SBATCH --cpus-per-task  	    ## The num of threads the code will use; default = 1
 #SBATCH --mem-per-cpu           ## Memory per allocated CPU
 
-srun ~/gatk-4.6.0.0/gatk IndexFeatureFile -I mus_musculus.vcf.gz
+srun /path/to/gatk-version/gatk IndexFeatureFile -I mus_musculus.vcf.gz
 srun gunzip -vf mus_musculus.vcf.gz
-srun ~/gatk-4.6.0.0/gatk SplitNCigarReads -R Mus_musculus.GRCm39.dna_rm.primary_assembly.fa \
-    --sequence-dictionary Mus_musculus.GRCm39.dna_rm.primary_assembly.dict \
+srun /path/to/gatk-version/gatk SplitNCigarReads -R Mus_musculus.GRCm39.dna_sm.primary_assembly.fa \
+    --sequence-dictionary Mus_musculus.GRCm39.dna_sm.primary_assembly.dict \
     -I alignment_out/marked_duplicates.bam \
     -O alignment_out/SplitNCigarReads.bam \
     --tmp-dir $1
-srun ~/gatk-4.6.0.0/gatk BaseRecalibrator -R Mus_musculus.GRCm39.dna_rm.primary_assembly.fa \
-    --known-sites mus_musculus.vcf \
+srun /path/to/gatk-version/gatk BaseRecalibrator -R Mus_musculus.GRCm39.dna_sm.primary_assembly.fa \
+    --known-sites mus_musculus_incl_consequences.vcf \
     -I alignment_out/SplitNCigarReads.bam \
     -O alignment_out/baseRecal.table \
     --tmp-dir $1
-srun ~/gatk-4.6.0.0/gatk ApplyBQSR -R Mus_musculus.GRCm39.dna_rm.primary_assembly.fa \
+srun /path/to/gatk-version/gatk ApplyBQSR -R Mus_musculus.GRCm39.dna_sm.primary_assembly.fa \
     -bqsr alignment_out/baseRecal.table \
     -I alignment_out/SplitNCigarReads.bam \
     -O alignment_out/baseRecal.bam \
     --tmp-dir $1
-srun ~/gatk-4.6.0.0/gatk AnalyzeCovariates -bqsr alignment_out/baseRecal.table \
+srun /path/to/gatk-version/gatk AnalyzeCovariates -bqsr alignment_out/baseRecal.table \
     -csv alignment_out/AnalyseCovariates.csv \
     --tmp-dir $1
     
