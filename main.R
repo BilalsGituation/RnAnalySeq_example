@@ -1,6 +1,6 @@
 # Run in POSIX (this is only tested in Ubuntu)
 options(timeout = 1000)
-pacman::p_load(rfiglet, # install below
+pacman::p_load(#rfiglet, # install below
                Rbowtie2, 
                stringr,
                tidyverse,
@@ -16,7 +16,7 @@ pacman::p_load(rfiglet, # install below
                #BSgenome.Mmusculus.UCSC.mm10.masked,
                Rhisat2,
                readr,
-               Rsubread,
+               #Rsubread,
                #DESeq2 part
                biomaRt,
                apeglm,
