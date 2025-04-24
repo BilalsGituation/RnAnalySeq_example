@@ -112,16 +112,19 @@ exec_wait("./shell/gunzip_fastq.sh")
 
 # - flush, delete or change the "alignment_out" directory unless you have saved preprocessed files
 
-# - mm39 ensembl reference genome (hard masked) available here https://ftp.ensembl.org/pub/release-112/fasta/mus_musculus/dna/
-exec_wait("wget", "https://ftp.ensembl.org/pub/release-112/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna_rm.primary_assembly.fa.gz")
-exec_wait("gunzip", c("-vf", "Mus_musculus.GRCm39.dna_rm.primary_assembly.fa.gz"))
+# - mm39 ensembl reference genome (soft masked) available here https://ftp.ensembl.org/pub/release-113/fasta/mus_musculus/dna/
+# Warning: at end of April 2025, it looks like the next releases of auxiliary ensembl files will come out imminently. 
+#         So try accessing https://ftp.ensembl.org/pub/release-115 (which is "Forbidden" at time of writing.)
+#         even if it does contain the same reference genome as recent previous releases
+exec_wait("wget", "https://ftp.ensembl.org/pub/release-113/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa.gz")
+exec_wait("gunzip", c("-vf", "Mus_musculus.GRCm39.dna_sm.primary_assembly.fa.gz"))
 
-# - mm39 ensembl annotation file available here https://ftp.ensembl.org/pub/release-112/gtf/mus_musculus/
-exec_wait("wget", "https://ftp.ensembl.org/pub/release-112/gtf/mus_musculus/Mus_musculus.GRCm39.112.gtf.gz")
-exec_wait("gunzip", c("-vf", "Mus_musculus.GRCm39.112.gtf.gz"))
+# - mm39 ensembl annotation file available here https://ftp.ensembl.org/pub/release-113/gtf/mus_musculus/
+exec_wait("wget", "https://ftp.ensembl.org/pub/release-113/gtf/mus_musculus/Mus_musculus.GRCm39.113.gtf.gz")
+exec_wait("gunzip", c("-vf", "Mus_musculus.GRCm39.113.gtf.gz"))
 
 # - mm39 ensembl variant file available here https://ftp.ensembl.org/pub/release-112/variation/vcf/mus_musculus/
-exec_wait("wget", "https://ftp.ensembl.org/pub/release-112/variation/vcf/mus_musculus/mus_musculus.vcf.gz")
+exec_wait("wget", "https://ftp.ensembl.org/pub/release-113/variation/vcf/mus_musculus/mus_musculus.vcf.gz")
 # decompress this ^^^ one later! You will be prompted
 
 # This makes it obvious in the console that a long job is complete
